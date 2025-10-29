@@ -1,9 +1,7 @@
-import pickle
 from flask import Flask, request, render_template
+import pickle
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 
-# Create Flask app
 application = Flask(__name__)
 app = application
 
@@ -11,50 +9,38 @@ app = application
 grid_model = pickle.load(open("grid.pkl", "rb"))
 standard_scaler = pickle.load(open("scaler.pkl", "rb"))
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
-    return render_template("index.html")
+    results = None
+    error = None
 
-@app.route("/predictdata", methods=["GET", "POST"])
-def predict_datapoint():
     if request.method == "POST":
         try:
-            age = float(request.form.get("age"))
-            sex = float(request.form.get("sex"))
-            cp = float(request.form.get("cp"))
-            trestbps = float(request.form.get("trestbps"))
-            chol = float(request.form.get("chol"))
-            fbs = float(request.form.get("fbs"))
-            restecg = float(request.form.get("restecg"))
-            thalach = float(request.form.get("thalach"))
-            exang = float(request.form.get("exang"))
-            oldpeak = float(request.form.get("oldpeak"))
-            slope = float(request.form.get("slope"))
-            ca = float(request.form.get("ca"))
-            thal = float(request.form.get("thal"))
+            features = [
+                float(request.form['age']),
+                float(request.form['sex']),
+                float(request.form['cp']),
+                float(request.form['trestbps']),
+                float(request.form['chol']),
+                float(request.form['fbs']),
+                float(request.form['restecg']),
+                float(request.form['thalach']),
+                float(request.form['exang']),
+                float(request.form['oldpeak']),
+                float(request.form['slope']),
+                float(request.form['ca']),
+                float(request.form['thal'])
+            ]
 
-        except (TypeError, ValueError):
-            return render_template("index.html", error="Invalid input — please enter numbers only.")
+            final_features = standard_scaler.transform([features])
+            prediction = grid_model.predict(final_features)[0]
 
-        # Scale and Predict
-        scaled_data = standard_scaler.transform([[
-            age, sex, cp, trestbps, chol, fbs, restecg,
-            thalach, exang, oldpeak, slope, ca, thal
-        ]])
+            results = "Heart Disease Detected" if prediction == 1 else "No Heart Disease"
 
-        result = grid_model.predict(scaled_data)[0]  # FIXED
+        except Exception:
+            error = "Invalid input values. Please enter correct numerical data."
 
-        # Convert numeric result to readable text
-        if result == 1:
-            result_text = "Heart Disease Risk Detected"
-        else:
-            result_text = "No Heart Disease Risk (Normal)"
+    return render_template("index.html", results=results, error=error)
 
-        return render_template("index.html", results=result_text)
-
-    # When GET request
-    return render_template("index.html")
-
-# Run server
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=5000, debug=True)
+    app.run(debug=True)
