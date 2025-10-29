@@ -2,7 +2,33 @@
 <html lang="en">
 <head>
     <title>Heart Diseases Prediction</title>
-</head>
+</head><form action="/" method="POST">
+    <!-- your input fields -->
+    <input type="text" name="cp">
+    <input type="text" name="trestbps">
+    <input type="text" name="chol">
+    <input type="text" name="fbs">
+    <input type="text" name="restecg">
+    <input type="text" name="thalach">
+    <input type="text" name="exang">
+    <input type="text" name="oldpeak">
+    <input type="text" name="slope">
+    <input type="text" name="ca">
+    <input type="text" name="thal">
+
+    <button type="submit">Predict Heart Disease</button>
+</form>
+
+{% if results %}
+<p style="color: green; font-weight: bold;">
+    Prediction Result: {{ results }}
+</p>
+{% elif error %}
+<p style="color: red; font-weight: bold;">
+    {{ error }}
+</p>
+{% endif %}
+
 <body>
     <h2>Enter Heart Parameters</h2>
 
@@ -56,3 +82,4 @@
     {% endif %}
 </body>
 </html>
+
